@@ -1,0 +1,20 @@
+
+        Bellow is my diary. Using this Diary, write a prompt for text-to-image process.
+        
+        ### Diary
+        A young student sitting alone in a classroom, feeling frustrated and overwhelmed.
+        The student¡¯s face shows sadness and frustration as they look at their books and notes.
+        Around them, other students are working confidently and smiling, creating a contrast.
+        The environment feels heavy with stress, and there is a pile of assignments on the desk.
+        The overall mood is gloomy, with muted colors and soft lighting to emphasize the emotional weight
+        
+        ### Prompt
+        
+        Create an image that captures the feeling of being overwhelmed and stressed as a young student.
+        The image should convey the idea of being lost in a sea of assignments and responsibilities,
+        with a sense of sadness and hopelessness.
+        Consider using muted colors and soft lighting to create a gloomy atmosphere.
+        The student should be the main focus of the image, with their face and body language conveying their emotions.
+        The background should be blurred or distorted to emphasize the feeling of being lost and alone.
+        The image should be creative and visually striking, conveying the emotional weight of the student's situation.
+inference time : 18.26 sec
