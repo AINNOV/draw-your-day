@@ -1,0 +1,29 @@
+write me a short contract for hiring AI designer
+
+Dear [Name],
+
+We are pleased to offer you the position of AI Designer at [Company Name]. We believe your skills and experience make you an ideal candidate for this role, and we are excited to have you join our team.
+
+In consideration of your employment, you agree to the following terms and conditions:
+
+1. Duties and Responsibilities: As an AI Designer at [Company Name], you will be responsible for designing and developing AI-powered solutions for our clients. This will include creating user interfaces, developing algorithms, and testing and debugging AI models.
+2. Term: This contract will begin on [start date] and end on [end date], unless otherwise terminated as provided herein.
+3. Compensation: In exchange for your services, we will pay you a salary of [salary] per year, paid in [payment frequency] installments.
+4. Work Hours: Your regular work hours will be [insert hours per week]. You will be expected to work [insert number of days per week] days per week, unless otherwise agreed upon by you and your supervisor.
+5. Confidentiality: You will maintain the confidentiality of all proprietary information and trade secrets of [Company Name], and you will not disclose any such information to any third party without the prior written consent of [Company Name].
+6. Non-Compete: During your employment and for a period of [insert duration], you will not engage in any business or activity that is competitive with [Company Name].
+7. Intellectual Property: You will retain ownership of any intellectual property created by you during your employment with [Company Name].
+8. Termination: This contract may be terminated by either party upon [insert number of days/weeks] days/weeks written notice to the other party.
+9. Governing Law: This contract will be governed by and construed in accordance with the laws of [insert state/province].
+
+By signing below, you acknowledge that you have read, understand, and agree to the terms and conditions of this contract.
+
+Signed:
+
+[Your Name]
+AI Designer
+[Company Name]
+
+Date: [Insert Date]
+
+inference time : 58.11 sec
