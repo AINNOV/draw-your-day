@@ -1,3 +1,7 @@
 quantized_llama.py
 results/
 *.txt
+qlora_model*/
+lora_model*/
+qlora_results*/
+lora_results*/
