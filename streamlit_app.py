@@ -13,11 +13,11 @@ if st.button("Generate Image"):
     
     if response.status_code == 200:
         data = response.json()
-        st.write(f"Generated Prompt: {data['prompt']}")
+        # st.write(f"Generated Prompt: {data['prompt']}")
         
         # 생성된 이미지 출력
         for image_path in data["images"]:
             image = Image.open(image_path)
-            st.image(image, caption=image_path)
+            st.image(image, caption="")
     else:
         st.write("Failed to generate images.")

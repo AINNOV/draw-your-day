@@ -26,7 +26,7 @@ class DiaryEntry(BaseModel):
 # Prompt 생성 함수
 def generate_prompt(diaries):
     prompt_template = f"""
-    Below is my diary. Using this Diary, write a prompt for text-to-image process.
+    Below is my diary. Using this Diary, write a prompt for text-to-image process. The token length should be less then 77.
     
     ### Diary
     {diaries}
@@ -39,7 +39,7 @@ def generate_prompt(diaries):
     return outputs
 
 # 이미지 생성 함수
-def generate_images(prompt, num_images=3, prompt_trial=0):
+def generate_images(prompt, num_images=1, prompt_trial=0):
     image_paths = []
     os.makedirs("./results", exist_ok=True)
     for i in range(num_images):
@@ -53,5 +53,5 @@ def generate_images(prompt, num_images=3, prompt_trial=0):
 @app.post("/generate")
 async def generate_images_endpoint(diary: DiaryEntry):
     prompt = generate_prompt(diary.text)
-    images = generate_images(prompt, num_images=3)
+    images = generate_images(prompt, num_images=1)
     return {"prompt": prompt, "images": images}
