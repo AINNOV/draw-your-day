@@ -19,7 +19,7 @@ model_4bit = AutoModelForCausalLM.from_pretrained(
 tokenizer = AutoTokenizer.from_pretrained(fine_tuned_model_path)  # Load the tokenizer from the same path
 
 
-model_4bit = PeftModel.from_pretrained(model_4bit, "./qlora_model_cook_refined_20").eval()
+model_4bit = PeftModel.from_pretrained(model_4bit, "./SYC_1029").eval()
 
 start_event = torch.cuda.Event(enable_timing=True)
 end_event = torch.cuda.Event(enable_timing=True)
@@ -51,24 +51,33 @@ end_event = torch.cuda.Event(enable_timing=True)
 # ### Answer: 
 # """
 
+# message = [
+#     {
+#         "role": "system",
+#         "content": "You are Edward Lee who is a best cook(i mean chef) ever in the world",
+#     },
+#     {"role": "user", "content": "How do you make javachip frapuccino?"},
+#  ]
 message = [
     {
         "role": "system",
-        "content": "You are Edward Lee who is a best cook(i mean chef) ever in the world",
+        "content": "You are \'Secure Your Contract\' that is an AI based system that takes a contract as an input, detects possibly disadvantageous/dangerous keywords/phrases and provide the refinement suggestion/solution for the input.",
     },
-    {"role": "user", "content": "How do you make javachip frapuccino?"},
- ]
+    {"role": "user", "content": "I need to draft a Lease Agreement ('Agreement') for an apartment rental. This Agreement is made on [Effective Date] between John Smith ('Landlord') and Emily Johnson ('Tenant').\n\n**1. Property Description**\nThe Landlord agrees to rent the residential property located at 123 Elm Street, Apt. 4B, Springfield, IL 62701 ('Property').\n\n**2. Term**\nThis Lease shall begin on [Start Date] and shall continue for a term of one year, ending on [End Date].\n\n**3. Rent**\nThe Tenant agrees to pay the Landlord $1,200 per month, due on the first day of each month. Payments must be made via bank transfer or check.\n\n**4. Security Deposit**\nThe Tenant shall pay a security deposit of $1,200, refundable upon lease termination, contingent upon the condition of the Property.\n\n**5. Maintenance and Repairs**\nThe Tenant shall maintain the Property in good condition and promptly report any necessary repairs to the Landlord.\n\n**6. Termination**\nIf the Tenant wishes to terminate this Lease, they must provide the Landlord with 30 days' written notice. The Landlord may terminate the Lease for non-payment of rent or breach of terms.\n\n**7. Governing Law**\nThis Agreement shall be governed by the laws of the State of Illinois.\n"},
+]
         
 inputs = tokenizer.apply_chat_template(message, tokenize=True, add_generation_prompt=False, return_tensors="pt")
 # print(tokenizer.batch_decode(inputs))
 
+
+
 start_event.record()
 
 
-
+input_len = len(tokenizer.batch_decode(inputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0])
 # inputs = tokenizer(prompt, return_tensors="pt")
 generate_ids = model_4bit.generate(inputs.to(device)) #.input_ids.to(device))
-outputs = tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+outputs = tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0][input_len:]
 
 end_event.record()
 torch.cuda.synchronize()

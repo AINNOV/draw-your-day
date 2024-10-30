@@ -431,6 +431,7 @@ for pair in data:
     {"role": "user", "content": f"{prompt}"},
     ]
     pair["prompt"] = tokenizer.batch_decode(tokenizer.apply_chat_template(template, tokenize=True, add_generation_prompt=False, return_tensors="pt"),  skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
+    pair["response"] += "</s>"
         
 with open('./cook_refined.json', 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=4)

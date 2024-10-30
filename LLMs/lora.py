@@ -27,7 +27,7 @@ model = AutoModelForCausalLM.from_pretrained(
     low_cpu_mem_usage=True,
 )
 
-with open('./cook_template.json', 'r', encoding='utf-8') as f:
+with open('./cook.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 dataset = Dataset.from_list(data)
@@ -38,7 +38,9 @@ eval_dataset = train_test_split['test']
 # Preprocessing function to tokenize prompts and responses
 def preprocess_function(examples):
     inputs = tokenizer(examples["prompt"], truncation=True, padding="max_length", max_length=256)
+    print(f"qlora input: {inputs}")
     outputs = tokenizer(examples["response"], truncation=True, padding="max_length", max_length=256)
+    print(f"qlora output: {outputs}")
     inputs["labels"] = outputs["input_ids"]
     return inputs
 
