@@ -8,3 +8,5 @@ qlora_results*/
 lora_results*/
 LLMs/SYC*
 LLMs/
+data/
+pretrained/
