@@ -1,0 +1,3 @@
+input_contract: ../data/inference_contract2.txt
+base_model: meta-llama/Llama-2-7b-chat-hf
+qlora_path: ../pretrained/SYC_1108

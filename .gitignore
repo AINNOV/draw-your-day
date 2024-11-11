@@ -10,3 +10,4 @@ LLMs/SYC*
 LLMs/
 data/
 pretrained/
+*log/

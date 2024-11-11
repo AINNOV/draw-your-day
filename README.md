@@ -1,7 +1,9 @@
+
+
 ### Fine-Tuning ###
 ```
 cd LLMs
-python3 qlora.py
+python3 finetune.py
 ```
 
 
@@ -10,27 +12,24 @@ python3 qlora.py
 Only LLM inference:
 ```
 cd LLMs
-python3 quantized_llama.py
+python3 finetuned_llama.py
 ```
 
-Note ```finetuned_llama.py```is not available yet since fine-tuning keeps failing.
+Note you can change ```configs/inference.yml``` for different settings.
+
+Download the [pretrained](https://drive.google.com/drive/folders/1SftVU4kSOVy7OP2FLdV7Eg5gN0gFg9y5?usp=sharing) model and place it at ```pretrained/``` as it is.
 
 ### Data Preparation for Fine-Tuning ###
 
 ```
-cd LLMs
-python3 save.py
+cd utils
+python3 save_oneliner.py
 ```
 
-The code will convert the normal prompts into ones for LLaMa, saved in ```./~.json```.
+The code will convert the normal prompts into ones for LLaMa, saved in ```data/dump``` as a backup (not for a real usage). It also push the data to your own huggingface repository, which our code actually uses.
 
 ### End-to-End Demo ###
 
 ```
 python3 demo_efficient.py
 ```
-
-### Problems ###
-1) Although ```data.json``` for prompt - json is well created, preprocessing(especially tokenizing) before feeding it to the model is tricky.
-
-Getting accustomed to fine-tuning LLaMa might take some time.
