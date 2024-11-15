@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+streamlit
+transformers
+diffusers
+torch
+sqlalchemy
+psycopg2-binary
+Pillow
+requests
