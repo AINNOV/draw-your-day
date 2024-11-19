@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from datetime import date
 from time import sleep
-from cookie_manager import cookies
+from pages.cookie_manager import cookies
 
 BASE_URL = "http://localhost:8000"
 

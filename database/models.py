@@ -5,6 +5,7 @@ from database.database import Base
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
+    # user_email = Column(String, unique=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     oauth_provider = Column(String, nullable=True)

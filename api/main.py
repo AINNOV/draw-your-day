@@ -1,8 +1,13 @@
-from fastapi import FastAPI, Depends, UploadFile, HTTPException, status, Header
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import FastAPI, Depends, Request, UploadFile, HTTPException, status, Header
+from fastapi.security import OAuth2PasswordBearer
+from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+from starlette.config import Config
+from starlette.middleware.sessions import SessionMiddleware
+from authlib.integrations.starlette_client import OAuth
+import requests
 from pydantic import BaseModel
 from database.models import User, DiaryEntry
 from database.database import SessionLocal, get_db, engine
@@ -10,17 +15,28 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from diffusers import StableDiffusionPipeline
 import torch
 import os
+from dotenv import load_dotenv
 from io import BytesIO
 from PIL import Image
 from datetime import date
+from peft import PeftModel
+from api._utils import prompt_with_template
+import logging
+import httpx
+
+# logging.basicConfig(level=logging.DEBUG)
+load_dotenv()
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 app = FastAPI()
 
 # Initialize models and tokenizer
 model_name = "meta-llama/Llama-2-7b-chat-hf"
+qlora_path = "./pretrained/DYD_1118"
 quantization_4bit = BitsAndBytesConfig(load_in_4bit=True)
 model_4bit = AutoModelForCausalLM.from_pretrained(model_name, quantization_config=quantization_4bit, device_map="auto", low_cpu_mem_usage=True)
-model = model_4bit.to("cuda")
+model_4bit = PeftModel.from_pretrained(model_4bit, qlora_path).eval()
+model = model_4bit.to(device)
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 
 sd_model_id = "ogkalu/comic-diffusion"
@@ -29,18 +45,22 @@ pipe = pipe.to("cuda")
 
 # Generate prompt from diary content
 def generate_prompt(content):
-    prompt_template = f"""
-    Below is my diary. Using this Diary, write a prompt for text-to-image process.
+    message = prompt_with_template(content)
+
+    inputs = tokenizer.apply_chat_template(
+        message, tokenize=True, add_generation_prompt=False, return_tensors="pt"
+    )
+    input_len = len(
+        tokenizer.batch_decode(
+            inputs, skip_special_tokens=True, clean_up_tokenization_spaces=False
+        )[0]
+    )
+    generate_ids = model_4bit.generate(inputs.to(device))
+    outputs = tokenizer.batch_decode(
+        generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False
+    )[0][input_len:]
     
-    ### Diary
-    {content}
-    
-    ### Prompt
-    """
-    inputs = tokenizer(prompt_template, return_tensors="pt").input_ids.to("cuda")
-    generated_ids = model.generate(inputs)
-    prompt = tokenizer.batch_decode(generated_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-    return prompt
+    return outputs
 
 # Generate images from prompt
 def generate_images(prompt):
@@ -58,11 +78,42 @@ class UserCreate(BaseModel):
     password: str
 
 # JWT 비밀 키 및 알고리즘 설정
-SECRET_KEY = "your_secret_key"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
+oauth = OAuth()
+app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
+
+# # Google OAuth 클라이언트 설정
+# oauth.register(
+#     name="google",
+#     client_id=os.getenv("GOOGLE_CLIENT_ID"),
+#     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
+#     authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
+#     authorize_params=None,
+#     access_token_url="https://accounts.google.com/o/oauth2/v2/token",
+#     access_token_params=None,
+#     refresh_token_url=None,
+#     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
+#     redirect_uri="http://localhost:8000/auth/google/callback",
+#     client_kwargs={"scope": "openid email profile",
+#                    "response_type": "code",},
+# )
+
+# # Kakao OAuth 클라이언트 설정
+# oauth.register(
+#     name="kakao",
+#     client_id=os.getenv("KAKAO_CLIENT_ID"),
+#     client_secret=os.getenv("KAKAO_CLIENT_SECRET"),
+#     authorize_url="https://kauth.kakao.com/oauth/authorize",
+#     access_token_url="https://kauth.kakao.com/oauth/token",
+#     authorize_params=None,
+#     access_token_params=None,
+#     refresh_token_url=None,
+#     redirect_uri="http://localhost:8000/auth/kakao/callback",
+# )
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
@@ -73,6 +124,54 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
+# 로그인 화면
+@app.get("/login_google")
+async def login_google():
+    authorize_url = "https://accounts.google.com/o/oauth2/auth"
+    redirect_uri = "http://localhost:8000/login_google/callback"
+    
+    google_login_url = f"{authorize_url}?response_type=code&client_id={os.getenv("GOOGLE_CLIENT_ID")}&redirect_uri={redirect_uri}&scope=openid%20profile%20email&access_type=offline"
+    return RedirectResponse(url=google_login_url)
+
+@app.get("/login_google/callback")
+async def auth_google(request: Request):
+    # 인증 코드 디버깅
+    code = request.query_params.get("code")
+    redirect_uri = "http://localhost:8000/login_google/callback"
+
+    # Google 토큰 엔드포인트로 직접 요청
+    data = {
+        "code": code,
+        "client_id": os.getenv("GOOGLE_CLIENT_ID"),
+        "client_secret": os.getenv("GOOGLE_CLIENT_SECRET"),
+        "redirect_uri": redirect_uri,
+        "grant_type": "authorization_code",
+    }
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post("https://accounts.google.com/o/oauth2/token", data=data)
+        response.raise_for_status()
+        token = response.json()
+    
+    access_token = token.get("access_token")
+    id_token = token.get("id_token")
+    jwks_url = "https://www.googleapis.com/oauth2/v3/certs"
+    jwks = requests.get(jwks_url).json()
+    algorithm = ["RS256"]
+    
+    decoded_token = jwt.decode(
+        id_token, 
+        jwks, 
+        algorithms = algorithm,
+        audience = os.getenv("GOOGLE_CLIENT_ID"),
+        access_token = access_token
+    )
+    
+    user = decoded_token.get("email")
+    return_url = f"http://1.229.207.166:8501/login/?user_info={user}"
+    return RedirectResponse(url=return_url)
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -108,6 +207,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 @app.post("/register")
 async def register(user: UserCreate, db: Session = Depends(get_db)):
+    print(user)
     hashed_password = user.password  # Here, use hashing for security
     user = User(username= user.username, hashed_password=hashed_password)
     db.add(user)

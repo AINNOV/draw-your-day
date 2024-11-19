@@ -1,6 +1,6 @@
 import streamlit as st
 from time import sleep
-from cookie_manager import cookies
+from pages.cookie_manager import cookies
 
 for key in st.session_state.keys():
     del st.session_state[key]
