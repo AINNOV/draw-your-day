@@ -30,7 +30,6 @@ device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 app = FastAPI()
 
-# Initialize models and tokenizer
 model_name = "meta-llama/Llama-2-7b-chat-hf"
 qlora_path = "./pretrained/DYD_1118"
 quantization_4bit = BitsAndBytesConfig(load_in_4bit=True)
@@ -43,7 +42,6 @@ sd_model_id = "ogkalu/comic-diffusion"
 pipe = StableDiffusionPipeline.from_pretrained(sd_model_id)
 pipe = pipe.to("cuda")
 
-# Generate prompt from diary content
 def generate_prompt(content):
     message = prompt_with_template(content)
 
@@ -62,7 +60,6 @@ def generate_prompt(content):
     
     return outputs
 
-# Generate images from prompt
 def generate_images(prompt):
     image = pipe(prompt).images[0]
     image_path = f"./generated_images/{os.urandom(4).hex()}.png"
@@ -77,7 +74,6 @@ class UserCreate(BaseModel):
     username: str
     password: str
 
-# JWT 비밀 키 및 알고리즘 설정
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
@@ -85,35 +81,6 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 oauth = OAuth()
 app.add_middleware(SessionMiddleware, secret_key = SECRET_KEY)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
-
-# # Google OAuth 클라이언트 설정
-# oauth.register(
-#     name="google",
-#     client_id=os.getenv("GOOGLE_CLIENT_ID"),
-#     client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-#     authorize_url="https://accounts.google.com/o/oauth2/v2/auth",
-#     authorize_params=None,
-#     access_token_url="https://accounts.google.com/o/oauth2/v2/token",
-#     access_token_params=None,
-#     refresh_token_url=None,
-#     server_metadata_url="https://accounts.google.com/.well-known/openid-configuration",
-#     redirect_uri="http://localhost:8000/auth/google/callback",
-#     client_kwargs={"scope": "openid email profile",
-#                    "response_type": "code",},
-# )
-
-# # Kakao OAuth 클라이언트 설정
-# oauth.register(
-#     name="kakao",
-#     client_id=os.getenv("KAKAO_CLIENT_ID"),
-#     client_secret=os.getenv("KAKAO_CLIENT_SECRET"),
-#     authorize_url="https://kauth.kakao.com/oauth/authorize",
-#     access_token_url="https://kauth.kakao.com/oauth/token",
-#     authorize_params=None,
-#     access_token_params=None,
-#     refresh_token_url=None,
-#     redirect_uri="http://localhost:8000/auth/kakao/callback",
-# )
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
@@ -126,7 +93,6 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encoded_jwt
 
 
-# 로그인 화면
 @app.get("/login_google")
 async def login_google():
     authorize_url = "https://accounts.google.com/o/oauth2/auth"
@@ -137,11 +103,9 @@ async def login_google():
 
 @app.get("/login_google/callback")
 async def auth_google(request: Request):
-    # 인증 코드 디버깅
     code = request.query_params.get("code")
     redirect_uri = "http://localhost:8000/login_google/callback"
 
-    # Google 토큰 엔드포인트로 직접 요청
     data = {
         "code": code,
         "client_id": os.getenv("GOOGLE_CLIENT_ID"),
@@ -198,8 +162,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=404, detail="존재하지 않는 아이디입니다.")
     
-    # 여기에 비밀번호 확인 로직 추가 (해싱된 비밀번호와 비교)
-    if user.hashed_password != request.password:  # 예시로 직접 비교
+    if user.hashed_password != request.password:  
         raise HTTPException(status_code=401, detail="비밀번호가 틀립니다.")
     
     access_token = create_access_token(data={"user_id": user.id})
@@ -208,7 +171,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 @app.post("/register")
 async def register(user: UserCreate, db: Session = Depends(get_db)):
     print(user)
-    hashed_password = user.password  # Here, use hashing for security
+    hashed_password = user.password  
     user = User(username= user.username, hashed_password=hashed_password)
     db.add(user)
     db.commit()
@@ -238,7 +201,7 @@ async def create_diary(diary: DiaryCreate, current_user: User = Depends(get_curr
         db.refresh(diary_entry)
         return diary_entry
     except Exception as e:
-        print(f"Error occurred: {e}")  # 콘솔에 에러 메시지 출력
+        print(f"Error occurred: {e}") 
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.delete("/diary/{diary_id}")
