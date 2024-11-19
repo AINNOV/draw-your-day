@@ -1,3 +1,3 @@
-input_contract: ../data/inference_contract2.txt
+input_diary: ../data/evaluation_diary1.txt
 base_model: meta-llama/Llama-2-7b-chat-hf
-qlora_path: ../pretrained/SYC_1108
+qlora_path: ../pretrained/DYD_1118

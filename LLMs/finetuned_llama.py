@@ -9,7 +9,7 @@ def main(config):
     # set_all_seeds(42)
     
     base_model = config.base_model
-    input_contract_path = config.input_contract
+    input_diary_path = config.input_diary
     qlora_path = config.qlora_path
 
     quantization_4bit = BitsAndBytesConfig(load_in_4bit=True)
@@ -24,7 +24,7 @@ def main(config):
     model_4bit = PeftModel.from_pretrained(model_4bit, qlora_path).eval()
 
 
-    with open(input_contract_path, "r") as file:
+    with open(input_diary_path, "r") as file:
         contract_text = file.read()
 
     message = prompt_with_template(contract_text)
