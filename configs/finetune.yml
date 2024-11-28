@@ -5,22 +5,22 @@ eval_contract:
   - ../data/evaluation_diary2.txt
 
 dataset:
-  train: "JJuny/llama2_DYD_1118_train"
-  eval: "JJuny/llama2_DYD_1118_eval"
+  train: "JJuny/llama2_DYD_train"
+  eval: "JJuny/llama2_DYD_eval"
 
 training:
-  output_dir: "../log/DYD_1118_training"
+  output_dir: "../log/DYD_1127_max200_log"
   batch_size: 5
-  batch_size_eval: 3
+  batch_size_eval: 4
   learning_rate: 1e-4
-  epochs: 20
+  epochs: 40
   logging_steps: 10
   save_steps: 200
   fp16: true
-  save_model_path: "../pretrained/DYD_1118"
+  save_model_path: "../pretrained/DYD_1127_max200"
 
 lora:
-  r: 16
-  alpha: 32
+  r: 32
+  alpha: 64
   dropout: 0.1
 
