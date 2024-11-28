@@ -9,8 +9,7 @@ from urllib.parse import urljoin
 
 BASE_URL = "http://localhost:8000"
 
-user_info = st.query_params.get_all('user_info')  
-print(user_info)
+user_info = st.query_params.get_all('user_info') 
 
 if user_info:
     response = requests.post(f"{BASE_URL}/login", json={"username": user_info[0], "password": "google"})

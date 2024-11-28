@@ -17,7 +17,15 @@ if "selected_entry" in st.session_state:
     st.session_state.selected_entry = None
 
 if "jwt_token" in st.session_state:
-    st.header("Create New Diary Entry")
+    st.markdown(
+        f"""
+        <div style="background-color: #f5f5f5; padding: 15px; border-radius: 10px; height: 150px; text-align: center; display: flex; flex-direction: column; justify-content: center;">
+            <p style="font-size: 64px; line-height: 1.6; color: #333;">{"Write your diary!"}</p>
+        </div>
+        """,
+        unsafe_allow_html = True,
+    )
+    title, date_input = st.columns([0.8, 0.2])
     title = st.text_input("Title", key="title")
     date_input = st.date_input("Date", value=date.today())
     content = st.text_area("Diary Content", key="content")
@@ -30,7 +38,7 @@ if "jwt_token" in st.session_state:
         if response.status_code == 200:
             st.success("Diary entry created!")
             sleep(0.1)
-            if st.session_state.selected_entry is not None:
+            if "selected_entry" in st.session_state and st.session_state.selected_entry is not None:
                 st.session_state.selected_entry = None
             st.switch_page("pages/diary_list.py")
         else:
