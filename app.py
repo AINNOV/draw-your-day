@@ -169,7 +169,6 @@ def main_page():
     # st.components.v1.html(html_code, height=800, scrolling = False)
     st.image("mainpage.png", width = 1000)
 
-# 로그인 상태 초기화 및 불러오기
 if "logged_in" not in st.session_state:
     if cookies.get("logged_in") is None:
         st.session_state.logged_in = False

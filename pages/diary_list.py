@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from time import sleep
 from PIL import Image
 import base64
 from io import BytesIO
@@ -142,14 +143,12 @@ def show_diary_entries(entries):
                     encoded_image = base64.b64encode(img_file.read()).decode()
                 st.image(f"data:image/png;base64,{encoded_image}", width=100)
 
-            # 제목 및 날짜 표시
             with col2:
                 st.subheader(entry['title'])
                 st.caption(entry['date'])
 
-            # 버튼 추가
             with col3:
-                if st.button("View Details", key=f"view_{entry['id']}"):
+                if st.button("View", key=f"view_{entry['id']}"):
                     st.session_state.selected_entry = entry
                     st.rerun()
 
@@ -260,7 +259,6 @@ def show_diary_detail(entry):
     </body>
     </html>
     """
-    # HTML 렌더링
     st.markdown(html_code, unsafe_allow_html=True)
     
     delete_button = st.button("Delete")
@@ -274,32 +272,46 @@ def show_diary_detail(entry):
             st.rerun()  
         else:
             st.error("Failed to delete diary entry.")
-
+    
+    regenerate_button = st.button("Regenerate")
+    if regenerate_button:
+        jwt_token = st.session_state.get("jwt_token")
+        headers = {"Authorization": f"Bearer {jwt_token}"}
+        response = requests.delete(f"{BASE_URL}/diary/{entry['id']}", headers=headers)
+        
+        if response.status_code == 200:
+            data = {"title": entry["title"], "date": entry["date"], "content": entry["content"]}
+            response = requests.post(f"{BASE_URL}/diary", json=data, headers=headers)
+            
+            if response.status_code == 200:
+                st.success("Diary entry created!")
+                new_entry = response.json()
+                st.session_state.selected_entry = new_entry
+                st.rerun()
+            else:
+                st.error(f"Failed to create diary entry: {response.status_code}")
+                st.write("Response content:", response.text)
+        else:
+            st.error("Failed to delete diary entry.")
 
 
 if "jwt_token" in st.session_state:
     jwt_token = st.session_state.get("jwt_token")
     headers = {"Authorization": f"Bearer {jwt_token}"}
-
     response = requests.get(f"{BASE_URL}/diaries", headers=headers)
-
+    
     if response.status_code == 200:
         entries = response.json()
+        
         if entries:
             if "selected_entry" not in st.session_state:
-                st.session_state.selected_entry = None
-                
-            print(st.session_state.selected_entry)
-            # 선택된 일기가 없을 때만 목록 표시
+                st.session_state.selected_entry = None   
+            # print(st.session_state.selected_entry)
             if st.session_state.selected_entry is None:
-                show_diary_entries(entries)
-                
+                show_diary_entries(entries)   
             else:
-                # 상세 페이지 표시
                 show_diary_detail(st.session_state.selected_entry)
-
         else:
             st.write("No diary entries found.")
-
 else:
     st.warning("로그인이 필요합니다.")
