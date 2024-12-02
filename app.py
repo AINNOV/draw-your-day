@@ -6,7 +6,6 @@ import base64
 from io import BytesIO
 from pages.cookie_manager import cookies
 
-st.set_page_config(layout="wide")
 st.set_option('client.showErrorDetails', False)
 
 def image_to_base64(image):
@@ -16,6 +15,18 @@ def image_to_base64(image):
     return img_str
 
 def main_page():
+    st.markdown(
+        f"""
+        <style>
+        .stApp {{
+            background-color: "#e93109";
+            
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+# "#FFFFFF"
     # today = datetime.today()
     # year, month = today.year, today.month
 
@@ -156,7 +167,7 @@ def main_page():
 
     # # Streamlit component
     # st.components.v1.html(html_code, height=800, scrolling = False)
-    st.image("mainpage.png")
+    st.image("mainpage.png", width = 1000)
 
 # 로그인 상태 초기화 및 불러오기
 if "logged_in" not in st.session_state:

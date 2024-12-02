@@ -6,8 +6,6 @@ from io import BytesIO
 import streamlit.components.v1 as components
 from pages.cookie_manager import cookies
 
-st.set_page_config(layout="wide")
-
 BASE_URL = "http://localhost:8000"
 
 if "logged_in" not in st.session_state:
@@ -136,22 +134,24 @@ def show_diary_entries(entries):
     entries = sorted(entries, key=lambda x: x['date'], reverse=True)
 
     for entry in entries:
-        col1, col2, col3 = st.columns([1, 5, 1])
-        with col1:
-            with open(entry.get("generated_image_path", None), "rb") as img_file:
-                encoded_image = base64.b64encode(img_file.read()).decode()
-            st.image(f"data:image/png;base64,{encoded_image}", width=100)
+        container = st.container(border = True)
+        with container:
+            col1, col2, col3 = st.columns([1, 5, 1])
+            with col1:
+                with open(entry.get("generated_image_path", None), "rb") as img_file:
+                    encoded_image = base64.b64encode(img_file.read()).decode()
+                st.image(f"data:image/png;base64,{encoded_image}", width=100)
 
-        # 제목 및 날짜 표시
-        with col2:
-            st.subheader(entry['title'])
-            st.caption(entry['date'])
+            # 제목 및 날짜 표시
+            with col2:
+                st.subheader(entry['title'])
+                st.caption(entry['date'])
 
-        # 버튼 추가
-        with col3:
-            if st.button("View Details", key=f"view_{entry['id']}"):
-                st.session_state.selected_entry = entry
-                st.rerun()
+            # 버튼 추가
+            with col3:
+                if st.button("View Details", key=f"view_{entry['id']}"):
+                    st.session_state.selected_entry = entry
+                    st.rerun()
 
     
     
@@ -263,6 +263,18 @@ def show_diary_detail(entry):
     # HTML 렌더링
     st.markdown(html_code, unsafe_allow_html=True)
     
+    delete_button = st.button("Delete")
+    if delete_button:
+        jwt_token = st.session_state.get("jwt_token")
+        headers = {"Authorization": f"Bearer {jwt_token}"}
+        response = requests.delete(f"{BASE_URL}/diary/{entry['id']}", headers=headers)
+        if response.status_code == 200:
+            st.success("Diary entry deleted successfully!")
+            st.session_state.selected_entry = None
+            st.rerun()  
+        else:
+            st.error("Failed to delete diary entry.")
+
 
 
 if "jwt_token" in st.session_state:
