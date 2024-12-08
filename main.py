@@ -129,7 +129,7 @@ def generate_prompt(content):
     return llama2_output
 
 def generate_images(prompt):
-    image = pipe(prompt).images[0]
+    image = pipe(prompt = prompt, negative_prompt = "disfigured, deformed, ugly, blurry, low resolution, poorly drawn, unnatural, bad anatomy, blurred faces, low-fidelity").images[0]
     image_path = f"./generated_images/{os.urandom(4).hex()}.png"
     image.save(image_path)
     return image_path
