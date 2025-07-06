@@ -6,7 +6,7 @@
 
 
 <div align="center">
-    Paper | 
+    <a href="https://drive.google.com/file/d/15hkHzWvgYTZ7hgirhQQgwlq_aHUoxB0p/view?usp=sharing">Paper</a> | 
     <a href="https://drive.google.com/file/d/1IdP6FAxAVGZwrP7VkzODqhutnwOywowr/view?usp=sharing">Poster</a>
 </div>
 
